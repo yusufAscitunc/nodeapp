@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: branchesdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: Test123
+      SERVICE_NAME: mysqldb
+    ports:
+      - "3306:3306"
+    expose:
+      - 3306
+    networks:
+      - branchapp
+    volumes:
+      - ./database/init/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+      - $HOME/database/:var/lib/mysql
+
+  nodejs:
+    build: .
+    image: nodejs:v1
+    container_name: nodejs-container
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysqldb
+    environment:
+      DB_HOST: mysqldb
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: Test123
+      DB_NAME: appdb
+    networks:
+      - branchapp
+
+networks:
+  branchapp:
+    driver: bridge
